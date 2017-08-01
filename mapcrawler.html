@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>EaselJS Example: Filters test file.</title>
+
+	<link href="./_assets/css/shared.css" rel="stylesheet" type="text/css"/>
+	<link href="./_assets/css/examples.css" rel="stylesheet" type="text/css"/>
+	<script src="./_assets/js/examples.js"></script>
+
+	<script src="./lib/easeljs-NEXT.combined.js"></script>
+	<!-- We also provide hosted minified versions of all CreateJS libraries.
+	  http://code.createjs.com -->
+
+<script id="editable">
+    var stageMap;
+	var imgMap;
+	var iconSearch;
+	var iconAttack;
+	var iconWantSize = 64;
+	var icon_1 ={imageIcon:null,icon:null,bgImg:null,container:null, wantSize:64,posX:0,posY:0};
+	var icon_2 ={imageIcon:null,icon:null,bgImg:null,container:null, wantSize:64,posX:0,posY:0};
+	function init() {
+
+		//wait for the image to load
+		icon_1.imageIcon = new Image();
+		icon_1.imageIcon.src = "./_assets/img/icon_search.png";
+		icon_1.wantSize = 80;
+		icon_1.wantImgSize = 64;
+		icon_1.posX = 500;
+		icon_1.posY = 100;
+
+		icon_2.imageIcon = new Image();
+		icon_2.imageIcon.src = "./_assets/img/icon_fight.png";
+		icon_2.wantSize = 80;
+		icon_2.wantImgSize = 64;
+		icon_2.posX = 500;
+		icon_2.posY = 200;
+
+		imgMap = new Image();
+		imgMap.onload = handleImageLoad;
+		imgMap.src = "./_assets/img/map_0.jpg";
+
+	}
+	function sceneAddIcon(_iconToAdd){
+		_iconToAdd.icon = new createjs.Bitmap(_iconToAdd.imageIcon).set({scaleX: 1.0, scaleY: 1.0});
+		
+		//scale to want size
+        _iconToAdd.icon.set({scaleX: _iconToAdd.wantImgSize/_iconToAdd.imageIcon.width, scaleY: _iconToAdd.wantImgSize/_iconToAdd.imageIcon.height}); 		
+
+
+        _iconToAdd.container = new createjs.Container();
+        _iconToAdd.bgImg = new createjs.Shape();
+		//s.drawCircle(_iconToAdd.wantSize,_iconToAdd.wantSize,_iconToAdd.wantSize);
+		_iconToAdd.bgImg.graphics.beginFill("white").drawCircle(_iconToAdd.wantSize/2, _iconToAdd.wantSize/2,_iconToAdd.wantSize/2);
+		
+		//pos to wantPos
+		_iconToAdd.container.addChild(_iconToAdd.bgImg );
+		_iconToAdd.container.addChild(_iconToAdd.icon);
+		//s.set({x: _iconToAdd.posX , y:_iconToAdd.posY}); 	
+		_iconToAdd.icon.set({x: (_iconToAdd.wantSize-_iconToAdd.wantImgSize)/2 , y:(_iconToAdd.wantSize-_iconToAdd.wantImgSize)/2}); 	
+		_iconToAdd.container.set({x: _iconToAdd.posX , y:_iconToAdd.posY}); 	
+		
+		_iconToAdd.container.on("mouseover", handleMouseEventOverIcon);
+		stageMap.addChild(_iconToAdd.container);
+	}
+	function handleMouseEventOverIcon(evt) {
+			alert("evt.target: "+evt.target+", evt.type: "+evt.type);
+			output.text = "evt.target: "+evt.target+", evt.type: "+evt.type;
+			// to save CPU, we're only updating when we need to, instead of on a tick:1
+			stage.update();
+		}
+
+	function handleImageLoad() {
+		//find canvas and load images, wait for last image to load
+		var canvas = document.getElementById("testCanvas");
+		// create a new stage and point it at our canvas:
+		stageMap = new createjs.Stage(canvas);
+		var bmpMap = new createjs.Bitmap(imgMap).set({scaleX: 1.0, scaleY: 1.0, x:300});
+
+		stageMap.addChild(bmpMap);
+	    sceneAddIcon(icon_1);
+	    sceneAddIcon(icon_2);
+
+	    //alert('posX = '+icon_1.posX);
+	    //for zoom
+		stageMap.set({scaleX: 0.5, scaleY: 0.5});
+        stageMap.enableMouseOver();
+		// draw to the canvas:
+		stageMap.update();
+	}
+</script>
+</head>
+
+<body onload="init();">
+<header class="EaselJS">
+	<h1>Filters</h1>
+
+	<p>Demonstrates using filters. Top-left: original. Top-right: <code>ColorMatrixFilter</code>.
+		Bottom-left: <code>ColorFilter</code>. Bottom-right:
+		<code>BlurFilter</code>.</p>
+</header>
+
+<div>
+	<canvas id="testCanvas" width="960" height="400"
+			style="background:none;"></canvas>
+</div>
+</body>
+</html>
