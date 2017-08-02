@@ -9,6 +9,7 @@
 	<script src="./_assets/js/examples.js"></script>
 
 	<script src="./lib/easeljs-NEXT.combined.js"></script>
+        <script src="./lib/jquery-3.2.1.js"></script>
 	<!-- We also provide hosted minified versions of all CreateJS libraries.
 	  http://code.createjs.com -->
 
@@ -18,31 +19,113 @@
 	var iconSearch;
 	var iconAttack;
 	var iconWantSize = 64;
-	var icon_1 ={imageIcon:null,icon:null,bgImg:null,container:null, wantSize:64,posX:0,posY:0};
-	var icon_2 ={imageIcon:null,icon:null,bgImg:null,container:null, wantSize:64,posX:0,posY:0};
+        var textOut;
+        var textTip;
+        var tipBg;
+        var containerTip
+        var mapDragStart={x:0,y:0,isDrag:0,targetStartX:0,targetStartY:0}
+        var mapPos={x:0,y:0};
+        var IconDesc = function (textAbout) {
+            this.name = null;
+            this.imageIcon = null;
+            this.icon = null;
+            this.bgImg = null;
+            this.container = null;
+            this.wantSize = 64;
+            this.posX = 0;
+            this.posY = 0;
+            this.scaleActive = 1.5;
+            this.scaleInActive = 1.0;
+            this.textAbout = textAbout;
+        };
+        IconDesc.prototype.dump = function() {
+                console.log("name=" + this.name+";wantSize="+this.wantSize+";posX="+this.posX+";posY="+this.posY);
+        };
+        IconDesc.prototype.doActive = function(mousePos) {
+                //console.log("doActive");
+                if (this.container !== null)
+                {
+                  
+                    this.container.set({
+                        scaleX: this.scaleActive
+                        , scaleY: this.scaleActive
+                        ,x:this.posX - (this.scaleActive-this.scaleInActive)/2*this.wantSize
+                        ,y:this.posY - (this.scaleActive-this.scaleInActive)/2*this.wantSize
+                    }); 
+                    //textOut.text = this.textAbout;
+                    
+                    
+                   //$( "div.textDesc" ).text( this.textAbout );
+                   $( "div.textDesc" ).html( this.textAbout );
+                    
+                    
+                   
+                    containerTip.x = mousePos.x +40;
+                    containerTip.y = mousePos.y + textTip.getBounds().height;
+                    textTip.text = this.textAbout;
+                    tipBg.graphics.clear().beginFill("#AAAAAA").drawRect(-10, -10, textTip.getBounds().width + 20,  textTip.getBounds().height  + 20);
+                     containerTip.visible = true;
+                     
+                     
+                }
+        };
+        IconDesc.prototype.doInactive = function(mousePos) {
+                //console.log("doInactive");
+                if (this.container !== null)
+                {
+                    this.container.set({
+                        scaleX: this.scaleInActive
+                        , scaleY: this.scaleInActive
+                        ,x:this.posX
+                        ,y:this.posY
+                    }); 
+                    
+                    containerTip.visible = false;
+                }
+        };
+        var listIcons = [];
+        function loadObjectsData(){
+            icon_1 = new IconDesc("icon1. <br/> Big Desc.<br/> <h1>Header 1 sadfasdasf;Big Desc.</h1> ");
+            icon_1.name = "icon1";
+            icon_1.imageIcon = new Image();
+            icon_1.imageIcon.src = "./_assets/img/icon_search.png";
+            icon_1.wantSize = 80;
+            icon_1.wantImgSize = 64;
+            icon_1.posX = 500;
+            icon_1.posY = 100;
+            listIcons.push(icon_1);
+
+            icon_2 = new IconDesc("icon2. <br/> Big Desc.<br/> <h1>Header 1 sadfasdasfdsfsdkl'jsldf's;dmfs'dlfkns[fiosdf;sdkfmsd;Big Desc.</h1> ");
+            icon_2.name = "icon2";
+            icon_2.imageIcon = new Image();
+            icon_2.imageIcon.src = "./_assets/img/icon_fight.png";
+            icon_2.wantSize = 80;
+            icon_2.wantImgSize = 64;
+            icon_2.posX = 500;
+            icon_2.posY = 200;
+            listIcons.push(icon_2);
+
+            icon_3 = new IconDesc("icon3. <br/> Big Desc.<br/> <h1>Header 1 sadfasdasfdsfsdkl'jsldf's;dmfs'dlfkns[fiosdf;sdkfmsd;Big Desc.</h1> ");
+            icon_3.name = "icon3";
+            icon_3.imageIcon = new Image();
+            icon_3.imageIcon.src = "./_assets/img/icon_fight.png";
+            icon_3.wantSize = 80;
+            icon_3.wantImgSize = 64;
+            icon_3.posX = 700;
+            icon_3.posY = 200;
+            listIcons.push(icon_3);
+        }
 	function init() {
 
 		//wait for the image to load
-		icon_1.imageIcon = new Image();
-		icon_1.imageIcon.src = "./_assets/img/icon_search.png";
-		icon_1.wantSize = 80;
-		icon_1.wantImgSize = 64;
-		icon_1.posX = 500;
-		icon_1.posY = 100;
-
-		icon_2.imageIcon = new Image();
-		icon_2.imageIcon.src = "./_assets/img/icon_fight.png";
-		icon_2.wantSize = 80;
-		icon_2.wantImgSize = 64;
-		icon_2.posX = 500;
-		icon_2.posY = 200;
-
+               
+                loadObjectsData();
 		imgMap = new Image();
 		imgMap.onload = handleImageLoad;
 		imgMap.src = "./_assets/img/map_0.jpg";
 
 	}
-	function sceneAddIcon(_iconToAdd){
+	function sceneAddIcon(stageWhere,_iconToAdd){
 		_iconToAdd.icon = new createjs.Bitmap(_iconToAdd.imageIcon).set({scaleX: 1.0, scaleY: 1.0});
 		
 		//scale to want size
@@ -61,14 +144,68 @@
 		_iconToAdd.icon.set({x: (_iconToAdd.wantSize-_iconToAdd.wantImgSize)/2 , y:(_iconToAdd.wantSize-_iconToAdd.wantImgSize)/2}); 	
 		_iconToAdd.container.set({x: _iconToAdd.posX , y:_iconToAdd.posY}); 	
 		
+                _iconToAdd.bgImg.name =_iconToAdd.name;
+                _iconToAdd.icon.name = _iconToAdd.name;
 		_iconToAdd.container.on("mouseover", handleMouseEventOverIcon);
-		stageMap.addChild(_iconToAdd.container);
+		_iconToAdd.container.on("mouseout", handleMouseEventOutIcon);
+                
+		stageWhere.addChild(_iconToAdd.container);
 	}
 	function handleMouseEventOverIcon(evt) {
-			alert("evt.target: "+evt.target+", evt.type: "+evt.type);
-			output.text = "evt.target: "+evt.target+", evt.type: "+evt.type;
+			
 			// to save CPU, we're only updating when we need to, instead of on a tick:1
-			stage.update();
+                        if (evt.target.name == null )
+                        {
+                             console.log("evt.target: "+evt.target+", evt.type: "+evt.type);
+                        }
+                        else
+                        {
+                            console.log("evt.target: "+evt.target+", evt.type: "+evt.type);
+                            doMouseOverForIconName(evt.target.name,{x:evt.stageX,y:evt.stageY});
+                        }
+			stageMap.update();
+		}
+                
+	function doMouseOverForIconName(_iconName,mousePos) 
+        {
+            for (var i = 0; i < listIcons.length; i ++ ){
+                if (listIcons[i].name !== null && listIcons[i].name == _iconName)
+                {
+                    //do shit
+                    listIcons[i].doActive(mousePos);
+                    //show right-panel info
+                    //show hint at cursor
+
+                    return;
+                }
+             }
+        }
+    	function doMouseOutForIconName(_iconName,mousePos) 
+        {
+            for (var i = 0; i < listIcons.length; i ++ ){
+                if (listIcons[i].name !== null && listIcons[i].name == _iconName)
+                {
+                    //do shit
+                    listIcons[i].doInactive(mousePos);
+                    //
+                    //hide right-panel info???
+                    //hide hint at cursor
+                    return;
+                }
+             }
+        }
+	function handleMouseEventOutIcon(evt) {
+			
+			// to save CPU, we're only updating when we need to, instead of on a tick:1
+                        if (evt.target.name == null )
+                        {
+                        }
+                        else
+                        {
+                            console.log("evt.target: "+evt.target+", evt.type: "+evt.type);
+                            doMouseOutForIconName(evt.target.name,{x:evt.stageX,y:evt.stageY});
+                        }
+			stageMap.update();
 		}
 
 	function handleImageLoad() {
@@ -76,16 +213,87 @@
 		var canvas = document.getElementById("testCanvas");
 		// create a new stage and point it at our canvas:
 		stageMap = new createjs.Stage(canvas);
-		var bmpMap = new createjs.Bitmap(imgMap).set({scaleX: 1.0, scaleY: 1.0, x:300});
+		var bmpMap = new createjs.Bitmap(imgMap).set({scaleX: 1.0, scaleY: 1.0, x:0,y:0});
 
-		stageMap.addChild(bmpMap);
-	    sceneAddIcon(icon_1);
-	    sceneAddIcon(icon_2);
+		var containerMap = new createjs.Container();
+                containerMap["x"] = mapPos.x;
+                containerMap["y"] = mapPos.y;
+              containerMap.addChild(bmpMap);
+              
+              
+            
+             for (var i = 0; i < listIcons.length; i ++ ){
+                sceneAddIcon(containerMap,listIcons[i]);
+             }
+            
+            
+              containerTip = new createjs.Container();
+            textTip = new createjs.Text("No data", "22px Arial", "#000");
+            textTip.x = 0;
+            textTip.y = 0;
+            textTip.lineWidth = 200;
+            textTip.lineHeight = 28;
+            textTip.textBaseline = "top";
+            textTip.textAlign = "left";
+            
+            tipBg = new createjs.Shape();
+            tipBg.graphics.beginFill("#AAAAAA").drawRoundRect(0,0,200,100,10);
+		
+                
+            containerTip.addChild(tipBg);
+            containerTip.addChild(textTip);
+            containerTip.visible = false;
+            containerMap.addChild(containerTip);
+            
+            containerMap.on("mousedown",function(evt) {
+				// currentTarget will be the container that the event listener was added to:
+				mapDragStart.x = evt.stageX;
+				mapDragStart.y = evt.stageY;
+                                mapDragStart.isDrag = 1;
+                                mapDragStart.targetStartX = evt.currentTarget.x;
+                                mapDragStart.targetStartY = evt.currentTarget.y;
+				// make sure to redraw the stage to show the change:
+				stageMap.update();   
+			});
+            containerMap.on("pressup",function(evt) {
+				// currentTarget will be the container that the event listener was added to:
+				mapDragStart.x = 0;
+				mapDragStart.y = 0;
+                                mapDragStart.isDrag = 0;
+				// make sure to redraw the stage to show the change:
+				stageMap.update();   
+			});
+            containerMap.on("pressmove",function(evt) {
+				// currentTarget will be the container that the event listener was added to:
+				evt.currentTarget.x = mapDragStart.targetStartX + evt.stageX-mapDragStart.x;
+				evt.currentTarget.y = mapDragStart.targetStartY + evt.stageY-mapDragStart.y;
+                console.log("move x = "+evt.currentTarget.x );
+				// make sure to redraw the stage to show the change:
+				stageMap.update();   
+			});
+            
+            textOut = new createjs.Text("No data", "22px Arial", "#000");
+            textOut.x = 0;
+            textOut.y = 0;
+            textOut.lineWidth = 400;
+            textOut.lineHeight = 28;
+            textOut.textBaseline = "top";
+            textOut.textAlign = "left";
 
-	    //alert('posX = '+icon_1.posX);
+
+          
+            
+            
+		//txt.outline = true;
+		//stageMap.addChild(textOut);
+                stageMap.addChild(containerMap);
+                
+
+          
+
 	    //for zoom
 		stageMap.set({scaleX: 0.5, scaleY: 0.5});
-        stageMap.enableMouseOver();
+                 stageMap.enableMouseOver();
 		// draw to the canvas:
 		stageMap.update();
 	}
@@ -94,16 +302,22 @@
 
 <body onload="init();">
 <header class="EaselJS">
-	<h1>Filters</h1>
+	<h1>Map header</h1>
 
-	<p>Demonstrates using filters. Top-left: original. Top-right: <code>ColorMatrixFilter</code>.
-		Bottom-left: <code>ColorFilter</code>. Bottom-right:
-		<code>BlurFilter</code>.</p>
+	<p>Map.</p>
 </header>
-
+    
+    
+     <div  id="dataBody" class="dataBody" width="1400" height="600" >
+    <div  id="textDesc" class="textDesc" width="400" height="400" >
+        Наведите на объект, чтобы получить информацию.
+    </div>
 <div>
-	<canvas id="testCanvas" width="960" height="400"
+	<canvas id="testCanvas" class="testCanvas" width="800" height="400"
 			style="background:none;"></canvas>
 </div>
+</div>
+    
+
 </body>
 </html>

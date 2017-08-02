@@ -66,3 +66,36 @@ body.embedded header {
 body.embedded {
 	margin: 0;
 }
+
+
+
+.textDesc 
+{
+    margin:0;
+    padding:0;
+    color:white;
+    font-family:Arial;
+    display:block;
+    background:#39f;
+    padding: 5px 0;
+     width: 400px;
+    height: 400px;
+    float: left;
+}
+
+.testCanvas
+{
+    display:block;
+    padding: 5px 0;
+    width: 800px;
+    height: 400px;  
+    float: left;
+}
+.dataBody
+{
+    #background:#f00;
+    display:block;
+    padding: 5px 0;
+    width: 1300px;
+    height: 600px;   
+}
