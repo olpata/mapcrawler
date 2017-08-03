@@ -15,6 +15,7 @@
 
 <script id="editable">
     var stageMap;
+      var dataObjects={};
 	var imgMap;
 	var iconSearch;
 	var iconAttack;
@@ -22,10 +23,11 @@
         var textOut;
         var textTip;
         var tipBg;
-        var containerTip
+        var containerTip;
+        var ctrlPressed = false;
         var mapDragStart={x:0,y:0,isDrag:0,targetStartX:0,targetStartY:0}
         var mapPos={x:0,y:0};
-        var IconDesc = function (textAbout) {
+        var IconDesc = function () {
             this.name = null;
             this.imageIcon = null;
             this.icon = null;
@@ -36,7 +38,10 @@
             this.posY = 0;
             this.scaleActive = 1.5;
             this.scaleInActive = 1.0;
-            this.textAbout = textAbout;
+            this.textWhere = null;
+            this.textAbout = null;
+            this.textHtml = null;
+            this.textTxt = null;
         };
         IconDesc.prototype.dump = function() {
                 console.log("name=" + this.name+";wantSize="+this.wantSize+";posX="+this.posX+";posY="+this.posY);
@@ -56,16 +61,18 @@
                     
                     
                    //$( "div.textDesc" ).text( this.textAbout );
-                   $( "div.textDesc" ).html( this.textAbout );
+                   $( "div.textDesc" ).html( this.textHtml);
                     
                     
                    
-                    containerTip.x = mousePos.x +40;
-                    containerTip.y = mousePos.y + textTip.getBounds().height;
-                    textTip.text = this.textAbout;
+                    containerTip.x = mousePos.x +20;
+                    containerTip.y = mousePos.y + 20; 
+                    textTip.text = this.textTxt;
                     tipBg.graphics.clear().beginFill("#AAAAAA").drawRect(-10, -10, textTip.getBounds().width + 20,  textTip.getBounds().height  + 20);
                      containerTip.visible = true;
-                     
+                     console.log(" mousePos.x = "+ mousePos.x);
+                     console.log(" mousePos.y = "+ mousePos.y);
+                     console.log(" height = "+ textTip.getBounds().height);
                      
                 }
         };
@@ -84,45 +91,49 @@
                 }
         };
         var listIcons = [];
+        function iconMakeDescHTML(thisIcon){
+            
+            return "Название - "+thisIcon.name+"</br>Адресс - "+thisIcon.textWhere+"</br>Описание - "+thisIcon.textAbout;
+        }
+         function iconMakeDescTxt(thisIcon){
+            
+            return "Название - "+thisIcon.name+"\nАдресс - "+thisIcon.textWhere+"\nОписание - "+thisIcon.textAbout;
+        }
         function loadObjectsData(){
-            icon_1 = new IconDesc("icon1. <br/> Big Desc.<br/> <h1>Header 1 sadfasdasf;Big Desc.</h1> ");
-            icon_1.name = "icon1";
-            icon_1.imageIcon = new Image();
-            icon_1.imageIcon.src = "./_assets/img/icon_search.png";
-            icon_1.wantSize = 80;
-            icon_1.wantImgSize = 64;
-            icon_1.posX = 500;
-            icon_1.posY = 100;
-            listIcons.push(icon_1);
+           
+            
+            console.log("dataObjects = "+dataObjects.xx);
+             for (var i = 0; i < dataObjects.listIcons.length; i ++ ){
+                 var thisIcon = new IconDesc();
+                thisIcon.name = dataObjects.listIcons[i].name;
+                thisIcon.imageIcon = new Image();
+                thisIcon.imageIcon.src = dataObjects.listIcons[i].iconSrc;
+                thisIcon.wantSize = 40;
+                thisIcon.wantImgSize = 32;
+                thisIcon.posX = dataObjects.listIcons[i].posX;
+                thisIcon.posY = dataObjects.listIcons[i].posY;
+                thisIcon.textWhere = dataObjects.listIcons[i].textWhere;
+                thisIcon.textAbout = dataObjects.listIcons[i].textAbout;
+                thisIcon.textHtml =  iconMakeDescHTML(thisIcon);
+                thisIcon.textTxt =  iconMakeDescTxt(thisIcon);
+                 
+                 
+                listIcons.push(thisIcon);
+             }
 
-            icon_2 = new IconDesc("icon2. <br/> Big Desc.<br/> <h1>Header 1 sadfasdasfdsfsdkl'jsldf's;dmfs'dlfkns[fiosdf;sdkfmsd;Big Desc.</h1> ");
-            icon_2.name = "icon2";
-            icon_2.imageIcon = new Image();
-            icon_2.imageIcon.src = "./_assets/img/icon_fight.png";
-            icon_2.wantSize = 80;
-            icon_2.wantImgSize = 64;
-            icon_2.posX = 500;
-            icon_2.posY = 200;
-            listIcons.push(icon_2);
-
-            icon_3 = new IconDesc("icon3. <br/> Big Desc.<br/> <h1>Header 1 sadfasdasfdsfsdkl'jsldf's;dmfs'dlfkns[fiosdf;sdkfmsd;Big Desc.</h1> ");
-            icon_3.name = "icon3";
-            icon_3.imageIcon = new Image();
-            icon_3.imageIcon.src = "./_assets/img/icon_fight.png";
-            icon_3.wantSize = 80;
-            icon_3.wantImgSize = 64;
-            icon_3.posX = 700;
-            icon_3.posY = 200;
-            listIcons.push(icon_3);
+          
         }
 	function init() {
 
 		//wait for the image to load
-               
-                loadObjectsData();
-		imgMap = new Image();
-		imgMap.onload = handleImageLoad;
-		imgMap.src = "./_assets/img/map_0.jpg";
+               $.getJSON('./_assets/json/objects.json', function(data) { 
+                    dataObjects=data;
+                    loadObjectsData();
+                    imgMap = new Image();
+                    imgMap.onload = handleImageLoad;
+                    imgMap.src = "./_assets/img/map_1.jpg";
+                  }); 
+                
 
 	}
 	function sceneAddIcon(stageWhere,_iconToAdd){
@@ -228,11 +239,11 @@
             
             
               containerTip = new createjs.Container();
-            textTip = new createjs.Text("No data", "22px Arial", "#000");
+            textTip = new createjs.Text("No data", "14px Arial", "#000");
             textTip.x = 0;
             textTip.y = 0;
             textTip.lineWidth = 200;
-            textTip.lineHeight = 28;
+            textTip.lineHeight = 18;
             textTip.textBaseline = "top";
             textTip.textAlign = "left";
             
@@ -243,7 +254,7 @@
             containerTip.addChild(tipBg);
             containerTip.addChild(textTip);
             containerTip.visible = false;
-            containerMap.addChild(containerTip);
+           // containerMap.addChild(containerTip);
             
             containerMap.on("mousedown",function(evt) {
 				// currentTarget will be the container that the event listener was added to:
@@ -252,6 +263,7 @@
                                 mapDragStart.isDrag = 1;
                                 mapDragStart.targetStartX = evt.currentTarget.x;
                                 mapDragStart.targetStartY = evt.currentTarget.y;
+                                containerTip.visible = false;
 				// make sure to redraw the stage to show the change:
 				stageMap.update();   
 			});
@@ -262,12 +274,22 @@
                                 mapDragStart.isDrag = 0;
 				// make sure to redraw the stage to show the change:
 				stageMap.update();   
+                                
+                                
+                                if (ctrlPressed)
+                                {
+                                    console.log("pressup with ctrl at "+evt.stageX);
+                                    //do create point
+                                    var x1 = (evt.stageX-evt.currentTarget.x );
+                                    var y1 = (evt.stageY-evt.currentTarget.y );
+                                     $( "div.debugOut" ).append("</br> x = "+x1 +" y = "+y1);
+                                }
 			});
             containerMap.on("pressmove",function(evt) {
 				// currentTarget will be the container that the event listener was added to:
 				evt.currentTarget.x = mapDragStart.targetStartX + evt.stageX-mapDragStart.x;
 				evt.currentTarget.y = mapDragStart.targetStartY + evt.stageY-mapDragStart.y;
-                console.log("move x = "+evt.currentTarget.x );
+                //console.log("move x = "+evt.currentTarget.x );
 				// make sure to redraw the stage to show the change:
 				stageMap.update();   
 			});
@@ -287,15 +309,27 @@
 		//txt.outline = true;
 		//stageMap.addChild(textOut);
                 stageMap.addChild(containerMap);
+                 stageMap.addChild(containerTip);
                 
 
           
 
 	    //for zoom
-		stageMap.set({scaleX: 0.5, scaleY: 0.5});
+		//stageMap.set({scaleX: 0.5, scaleY: 0.5});
                  stageMap.enableMouseOver();
 		// draw to the canvas:
 		stageMap.update();
+                
+                
+                $(window).keydown(function(evt) {
+                    if (evt.which == 17) { // ctrl
+                      ctrlPressed = true;
+                    }
+                  }).keyup(function(evt) {
+                    if (evt.which == 17) { // ctrl
+                      ctrlPressed = false;
+                    }
+                  });
 	}
 </script>
 </head>
@@ -317,6 +351,8 @@
 			style="background:none;"></canvas>
 </div>
 </div>
+        <div  id="debugOut" class="debugOut" width="1000" height="800" >
+    </div>
     
 
 </body>
